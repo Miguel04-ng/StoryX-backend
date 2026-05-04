@@ -145,7 +145,7 @@ const upsertProfile = async (req, res, next) => {
       return sendError(res, 403, 'Seuls les prestataires peuvent gérer un profil.');
     }
 
-    const { display_name, description, tarif_min, tarif_max, ville, localisation, disponibilites } = req.body;
+    const { display_name, description, tarif_min, tarif_max, ville, localisation, disponibilites, photo_profil } = req.body;
 
     await Prestataire.update(
       { display_name, description, tarif_min, tarif_max },
@@ -158,7 +158,29 @@ const upsertProfile = async (req, res, next) => {
       localisation,
       disponibilites,
     });
-
+    //Sauvegarder la photo du profil si fournie
+    if(photo_profil) {
+      const { saveBase64Image } = require('../middleware/upload');
+      const url = saveBase64Image(photo_profil, `profil_${req.prestataire.id}`);
+      if(url) {
+        const profileId = profile.id || profile.dataValues.id;
+        //Chercher si une photo de couverture existe déjà
+        const existing = await Photo.findOne({
+          where: { profile_id: profileId, is_cover: 1 }
+        })
+        if(existing){
+          await existing.update({ url });
+        } else {
+            await Photo.create({
+            profile_id: profileId,
+            url,
+            is_cover: 1,
+            is_approved: 1,
+            sort_order: 0,
+          });
+        }
+      }
+    }
     return sendSuccess(res, 200, 'Profil mis à jour.', { profile });
   } catch (error) { next(error); }
 };
