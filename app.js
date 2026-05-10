@@ -28,8 +28,8 @@ app.use('/api', rateLimit({ windowMs: 15*60*1000, max: 1000,
 app.use('/api/auth', rateLimit({ windowMs: 15*60*1000, max: 20,
   message: { success: false, message: 'Trop de tentatives.' } }));
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
