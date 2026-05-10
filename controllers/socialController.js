@@ -4,21 +4,9 @@ const { sendSuccess, sendError, getPagination, buildPaginationMeta } = require('
 const { saveBase64Image } = require('../middleware/upload');
 
 // ── Sauvegarder un media base64 (photo ou vidéo) ─────────────────────────────
-const saveMedia = (base64, prefix, postId) => {
+const saveMedia = async (base64, prefix, postId) => {
   if (!base64 || typeof base64 !== 'string') return null;
-  // Vidéo base64
-  if (base64.startsWith('data:video/')) {
-    const ext = base64.match(/data:video\/(\w+)/)?.[1] || 'mp4';
-    const data = base64.split(',')[1];
-    const fs   = require('fs');
-    const fname = `${prefix}_${postId}_${Date.now()}.${ext}`;
-    const fpath = path.join(__dirname, '..', 'uploads', fname);
-    fs.writeFileSync(fpath, Buffer.from(data, 'base64'));
-    const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-    return `${baseUrl}/uploads/${fname}`;
-  }
-  // Photo base64
-  return saveBase64Image(base64, `${prefix}_${postId}`);
+  return await saveBase64Image(base64, `${prefix}_${postId}`);
 };
 
 // ── POST /api/posts ───────────────────────────────────────────────────────────
@@ -56,7 +44,7 @@ const createPost = async (req, res, next) => {
       // Sauvegarder les médias
       for (let i = 0; i < medias.length; i++) {
         const m = medias[i];
-        const url = saveMedia(m.data, m.type.toLowerCase(), post.id);
+        const url = await saveMedia(m.data, m.type.toLowerCase(), post.id);
         if (url) {
           // Pour les vidéos, créer une miniature (ici on stocke juste l'URL)
           await PostMedia.create({

@@ -16,23 +16,33 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
  * Le frontend envoie les images en base64 dans le corps JSON.
  * En production, utiliser multer + Cloudinary.
  */
-const saveBase64Image = (base64String, filename) => {
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const saveBase64Image = async (base64String, filename) => {
   if (!base64String) return null;
 
-  // Extraire les données base64
-  const matches = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-  if (!matches) return null;
+  try {
+    // Détecter si c'est une vidéo ou une image
+    const isVideo = base64String.startsWith('data:video/');
+    const resourceType = isVideo ? 'video' : 'image';
 
-  const ext      = matches[1].split('/')[1] || 'jpg';
-  const data     = matches[2];
-  const fname    = `${filename}_${Date.now()}.${ext}`;
-  const filepath = path.join(UPLOAD_DIR, fname);
+    const result = await cloudinary.uploader.upload(base64String, {
+      folder: 'storyx',
+      public_id: `${filename}_${Date.now()}`,
+      resource_type: resourceType,
+    });
 
-  fs.writeFileSync(filepath, Buffer.from(data, 'base64'));
-
-  // En dev : URL locale. En prod : URL Cloudinary
-  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  return `${baseUrl}/uploads/${fname}`;
+    return result.secure_url;
+  } catch (error) {
+    console.error('Erreur upload Cloudinary:', error);
+    return null;
+  }
 };
 
 /**

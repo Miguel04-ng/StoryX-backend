@@ -161,7 +161,7 @@ const upsertProfile = async (req, res, next) => {
     //Sauvegarder la photo du profil si fournie
     if(photo_profil) {
       const { saveBase64Image } = require('../middleware/upload');
-      const url = saveBase64Image(photo_profil, `profil_${req.prestataire.id}`);
+      const url = await saveBase64Image(photo_profil, `profil_${req.prestataire.id}`);
       if(url) {
         const profileId = profile.id || profile.dataValues.id;
         //Chercher si une photo de couverture existe déjà

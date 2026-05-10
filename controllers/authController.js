@@ -50,8 +50,8 @@ const register = async (req, res, next) => {
         }, { transaction: t });
       } else if (roleUp === 'PRESTATAIRE') {
         const { saveBase64Image } = require('../middleware/upload');
-        const photoProfilUrl   = saveBase64Image(photo_profil,   `profil_${user.id}`);
-        const photoIdentiteUrl = saveBase64Image(photo_identite, `identite_${user.id}`);
+        const photoProfilUrl   = await saveBase64Image(photo_profil,   `profil_${user.id}`);
+        const photoIdentiteUrl = await saveBase64Image(photo_identite, `identite_${user.id}`);
 
         const prest = await Prestataire.create({
           user_id:      user.id,
