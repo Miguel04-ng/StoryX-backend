@@ -19,6 +19,7 @@ const {
 const {
   createPost, getPosts, getMyPosts, deletePost,
   toggleFavorite, getFavorites, checkFavorite,
+  incrementPostView,
 } = require('../controllers/socialController');
 const {
   getStats, getUsers, toggleUserActive, deleteUser,
@@ -82,6 +83,7 @@ postsRouter.get('/',         optionalAuth, getPosts);
 postsRouter.get('/mine',     protect, restrictTo('PRESTATAIRE'), getMyPosts);
 postsRouter.post('/',        protect, restrictTo('PRESTATAIRE'), createPost);
 postsRouter.delete('/:id',   protect, deletePost);
+postsRouter.post('/:id/view', optionalAuth, incrementPostView); // J'utilse optionalAuth au lieu de authMilddleware pour que même les visiteurs non connectés puissent compter une vue.
 
 // ── Favorites ─────────────────────────────────────────────────────────────────
 const favoritesRouter = express.Router();

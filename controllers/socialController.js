@@ -261,7 +261,16 @@ const checkFavorite = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+// Incrémenter les vues des vidéos
+const incrementPostView = async (req, res, next) =>{
+  try{
+    const {id} = req.params;
+    await Post.increment('views_count', {where: {id}});
+    return sendSuccess(res, 200, 'Vue enregistrée');
+  }catch (error) {next(error);}
+}
+
 module.exports = {
   createPost, getPosts, getMyPosts, deletePost,
-  toggleFavorite, getFavorites, checkFavorite,
+  toggleFavorite, getFavorites, checkFavorite, incrementPostView,
 };
